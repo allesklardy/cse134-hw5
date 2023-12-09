@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script>
+    class RatingWidget extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' })
+        this.shadowRoot.innerHTML = ` 
+        <div class="rating-widget">
+        <h2>Rating Widget</h2>
+        <div id="output">
+        <div id="star1" class="star">★</div>
+        <div id="star2" class="star">★</div>
+        <div id="star3" class="star">★</div>
+        <div id="star4" class="star">★</div>
+        <div id="star5" class="star">★</div>
+        </div>
+        <div>
+        <style>
+          .star {
+            display: inline-block;
+            font-size: 2rem;
+            color: var(--star-color, grey);
+            cursor: pointer;
+          }
+          .rating-widget {
+            display: block;
+            border: 1px solid grey;
+            padding: 1rem;
+            width: 300px;
+            border-radius: 1em;
+            padding: 0em 0em 1em 2em;
+          }
+          #output {
+            margin-top: -0.5em;
+          }
+          </style>
+        `
+        let stars = this.shadowRoot.querySelectorAll('.star')
+        let output = this.shadowRoot.querySelector('#output')
+        let currentRating = -1;
+        stars.forEach((star, index) => {
+          star.addEventListener('mouseover', (event) => {
+            let myId = parseInt(event.target.id.replace('star', ''))
+            currentRating = myId;
+            for (let i = 1; i <= 5; i++) {
+              if (i <= myId) {
+                this.shadowRoot.querySelector(`#star${i}`).style.color = 'var(--selected-color, orange)'
+              } else {
+                this.shadowRoot.querySelector(`#star${i}`).style.color = 'var(--star-color, grey)'
+              }
+            }
+          })
+          star.addEventListener('click', () => {
+            if (currentRating <= 3) {
+              output.innerHTML = `<p>We can do better! Thank you for your feedback</p>`
+            } else {
+              output.innerHTML = `<p>Excellent! Thank you for your feedback</p>`
+            }
+            const url = 'https://httpbin.org/post';
+
+            let formData = new FormData();
+            formData.append('question', "How satisfied are you?");
+            formData.append('sentBy', "JS");
+            formData.append('rating', currentRating);
+
+            const fetchOptions = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Sent-By': 'JavaScript'
+              },
+              body: formData
+            };
+
+            fetch(url, fetchOptions)
+              .then(response => response.json())
+              .then(data => console.log(data))
+              .catch(error => console.error(error));
+          }
+          )
+        })
+
+      }
+
+    }
+
+
+    window.customElements.define('rating-widget', RatingWidget);
+  </script>
+  <style>
+    :root {
+      --star-color: grey;
+      --selected-color: orange;
+    }
+  </style>
+</head>
+
+
+<body>
+  <rating-widget>
+    <form action="https://httpbin.org/post" method="POST">
+      <label for="rating">How satisfied are you?</label>
+      <input type="hidden" name="question" value="How satisfied are you?">
+      <input type="hidden" name="sentBy" value="HTML">
+      <input type="number" id="rating" name="rating" min="1" max="5" value="0" required>
+      <button type="submit">Submit</button>
+    </form>
+  </rating-widget>
+
+
+</body>
+
+</html>
