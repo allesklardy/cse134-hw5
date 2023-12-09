@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script>
+    class WeatherWidget extends HTMLElement {
+      constructor() {
+        super();
+        function userLocation() {
+
+        }
+
+        function weatherData(latitude, longitude) {
+
+        }
+
+        this.attachShadow({ mode: 'open' })
+        this.shadowRoot.innerHTML = ` 
+        <div class="weather-widget">
+        <h2>Weather Widget</h2>
+        <div id="output">Loading ...</div>
+        </div>
+
+        <style>
+        .weather-widget {
+          display: block;
+          border: 1px solid grey;
+          padding: 1rem;
+          width: 300px;
+          border-radius: 1em;
+          padding: 2em 3em;
+        }
+        `;
+
+        if (!navigator.geolocation) {
+          console.error("Geolocation is not supported by your browser");
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            console.log("Latitude: ", latitude, "Longitude: ", longitude);
+            let url = `https://api.weather.gov/points/${latitude},${longitude}`;
+            console.log(url)
+            fetch(url)
+              .then((response) => response.json())
+              .then((data) => {
+                console.log(data);
+                let forecastUrl = data.properties.forecast;
+                fetch(forecastUrl)
+                  .then((response) => response.json())
+                  .then((data) => {
+                    console.log(data);
+                    let forecast = data.properties.periods[0].detailedForecast;
+                    console.log(forecast);
+                    this.shadowRoot.querySelector('#output').innerHTML = forecast;
+                  });
+              });
+          },
+          () => {
+            console.error("Unable to retrieve your location");
+
+          }
+        );
+      }
+
+
+
+    }
+
+
+    window.customElements.define('weather-widget', WeatherWidget);
+  </script>
+  <style>
+    :root {}
+  </style>
+</head>
+
+
+<body>
+  <weather-widget>
+    <h2>Weather Widget </h2>
+    <p>Current Weather Conditions Unavailable</p>
+  </weather-widget>
+
+
+</body>
+
+</html>
