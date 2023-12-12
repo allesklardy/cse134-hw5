@@ -57,7 +57,13 @@
                     console.log(data);
                     let forecast = data.properties.periods[0].detailedForecast;
                     console.log(forecast);
-                    this.shadowRoot.querySelector('#output').innerHTML = forecast;
+                    let icon = "";
+                    if (data.properties.periods[0].temperature < 32) {
+                      icon = "❄️ ";
+                    } else {
+                      icon = "☀️ ";
+                    }
+                    this.shadowRoot.querySelector('#output').innerHTML = icon + forecast;
                   });
               });
           },
